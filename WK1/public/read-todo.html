@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TJ - WK1</title>
+  </head>
+  <style>
+    .todo {
+      border: 1px solid rgb(0, 0, 0);
+    }
+  </style>
+  <body>
+    <div id="output"></div>
+  </body>
+  <script>
+    window.addEventListener('load', load);
+
+    async function load(e) {
+      let promise = await fetch('/todo');
+      let data = await promise.json();
+
+      const output = document.querySelector('#output');
+      let todos  = '';
+
+      for (let i = 0; i < data.length; i++) {
+        todos += '<div class="todo">';
+        for (let prop in data[i]) {
+          todos += `<p">${prop}: ${data[i][prop]}</p>`;
+        }
+        todos += '</div>';
+      }
+      output.innerHTML = todos;
+    }
+    load();
+  </script>
+</html>
