@@ -33,8 +33,11 @@ app.get('/read-todo', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'read-todo.html'));
 });
 
+// updated
 app.use((req, res) => {
-  res.writeHead(301, {'Location': req.headers['host'] + '/index'});
+  res.writeHead(301, {
+    Location: `http://${req.headers.host}/index`,
+  });
   res.end();
 });
 
