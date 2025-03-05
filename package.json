@@ -1,0 +1,24 @@
+{
+  "name": "se373-adv-open-source-web",
+  "version": "1.0.0",
+  "description": "Demo for creating a node application",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tristen247/SE373-Adv-Open-Source-Web.git"
+  },
+  "author": "Tristen Jussaume",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Tristen247/SE373-Adv-Open-Source-Web/issues"
+  },
+  "homepage": "https://github.com/Tristen247/SE373-Adv-Open-Source-Web#readme",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "express": "^4.21.2",
+    "mongoose": "^8.12.1"
+  }
+}
