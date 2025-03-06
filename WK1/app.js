@@ -39,6 +39,15 @@ const gameSchema = new mongoose.Schema({
 
 const Game = mongoose.model("Game", gameSchema, "favoritegames");
 
+
+//Handlebars examples
+app.get("/hbsindex", (req,res)=>{
+  res.render("home", {
+      title:"Welcome to the Handlbars Site",
+      message:"This is our page using the template engine"
+  })
+});
+
 //Crud app examples Connection to DB route examples below
 app.get("/games", async (req,res)=>{
     try{
@@ -107,6 +116,8 @@ app.delete("/deletegame/gamename/", async (req,res)=>{
   }
 })
 
+
+
 const readFile = (path) => {
   return new Promise((resolve, reject) => {
     fs.readFile(path, 'utf8', (err, data) => {
@@ -143,6 +154,7 @@ app.use((req, res) => {
   });
   res.end();
 });
+
 //PORT log
 app.listen(PORT, () => {
   console.log("Server running on port 3000.");
