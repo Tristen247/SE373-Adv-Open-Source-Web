@@ -1,0 +1,44 @@
+<!-- views/employees/editEmployee.hbs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Employee</title>
+</head>
+<body>
+  <h1>Edit Employee: {{employee.firstName}} {{employee.lastName}}</h1>
+
+  <form action="/update/{{employee._id}}" method="POST">
+    <label for="firstName">First Name:</label>
+    <input type="text" name="firstName" value="{{employee.firstName}}" required><br><br>
+
+    <label for="lastName">Last Name:</label>
+    <input type="text" name="lastName" value="{{employee.lastName}}" required><br><br>
+
+    <label for="department">Department:</label>
+    <select name="department" required>
+      <!-- Show 'selected' if employee.department matches the value -->
+      <option value="Sales" 
+        {{#if (eq employee.department 'Sales')}}selected{{/if}}>Sales</option>
+      <option value="Engineering" 
+        {{#if (eq employee.department 'Engineering')}}selected{{/if}}>Engineering</option>
+      <option value="HR" 
+        {{#if (eq employee.department 'HR')}}selected{{/if}}>HR</option>
+    </select><br><br>
+
+    <label for="startDate">Start Date:</label>
+    <input type="date" name="startDate" value="{{formatAsDate employee.startDate 'YYYY-MM-DD'}}"><br><br>
+
+    <label for="jobTitle">Job Title:</label>
+    <input type="text" name="jobTitle" value="{{employee.jobTitle}}" required><br><br>
+
+    <label for="salary">Salary:</label>
+    <input type="number" name="salary" value="{{employee.salary}}" required><br><br>
+
+    <button type="submit">Update</button>
+  </form>
+
+  <br>
+  <a href="/employees">Back to All Employees</a>
+</body>
+</html>

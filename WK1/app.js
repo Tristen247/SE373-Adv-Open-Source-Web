@@ -1,5 +1,4 @@
-//Note: If something breaks or isnt working may need to check Express
-
+const moment = require("moment"); // Import moment.js for date formatting
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -9,19 +8,31 @@ const fs = require('fs');
 const PORT = 3000;
 const app = express();
 
-//Set Handlebars as our templating engine
-app.engine("handlebars", exphbs.engine());
-app.set("view engine", "handlebars");
-app.set("views", "./views");
+app.engine('hbs', exphbs.engine({
+  extname: '.hbs',
+  defaultLayout: false,
+  helpers: {
+    eq: (a, b) => a === b,
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+    formatAsDate: (date, format) => {
+      if (!date) return ''; // If no date, return empty string
+      if (!(date instanceof Date) && typeof date !== "string") return ''; // Ensure valid date
+      if (typeof format !== "string") format = "MM/DD/YYYY"; // Ensure is in string format
+
+      return moment(date).local().format(format);
+    }
+  }
+  
+}));
+app.set('view engine', 'hbs');
+app.set('views', path.join(__dirname, 'views'));
 
 //Middleware body-parser parses json reqs
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+
 //MongoDB Database connection
-const mongoURI = "mongodb://localhost:27017/gamelibrary"
+const mongoURI = "mongodb://localhost:27017/Empl"
 mongoose.connect(mongoURI);
 const db = mongoose.connection;
 
@@ -31,15 +42,102 @@ db.once("open", ()=>{
   console.log('connected to MongoDB Database')
 });
 
-//Mongoose Schema and Model
+// Define the schema
+const employeeSchema = new mongoose.Schema({
+  firstName: String,
+  lastName: String,
+  department: String,
+  startDate: Date,
+  jobTitle: String,
+  salary: Number,
+});
+const Employee = mongoose.model('Employee', employeeSchema, "employee");
+
+// ========== Employee Routes ========== //
+// 1. Home / Create Employee Form
+app.get('/', (req, res) => {
+  res.render('employees/createEmployee'); 
+});
+
+// 2. Handle Creation (POST)
+app.post('/create', async (req, res) => {
+  try {
+    const newEmployee = new Employee({
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      department: req.body.department,
+      startDate: req.body.startDate,
+      jobTitle: req.body.jobTitle,
+      salary: req.body.salary,
+    });
+    await newEmployee.save();
+    res.redirect('/employees');
+  } catch (err) {
+    res.status(500).send('Error creating employee: ' + err.message);
+  }
+});
+
+// 3. View All Employees (GET)
+app.get('/employees', async (req, res) => {
+  try {
+    const employees = await Employee.find().lean();
+    res.render('employees/viewEmployee', { employees });
+  } catch (err) {
+    res.status(500).send('Error retrieving employees: ' + err.message);
+  }
+});
+
+// 4. Edit Form 
+app.get('/edit/:id', async (req, res) => {
+  try {
+    const employee = await Employee.findById(req.params.id).lean();
+    if (!employee) return res.status(404).send('Employee not found');
+    res.render('employees/editEmployee', { employee });
+  } catch (err) {
+    res.status(500).send('Error loading employee: ' + err.message);
+  }
+});
+
+// 5. Handle Update
+app.post('/update/:id', async (req, res) => {
+  try {
+    await Employee.findByIdAndUpdate(req.params.id, {
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      department: req.body.department,
+      startDate: req.body.startDate,
+      jobTitle: req.body.jobTitle,
+      salary: req.body.salary,
+    }).lean();
+    res.redirect('/employees');
+  } catch (err) {
+    res.status(500).send('Error updating employee: ' + err.message);
+  }
+});
+
+// 6. Delete
+app.get('/delete/:id', async (req, res) => {
+  try {
+    const deletedEmp = await Employee.findByIdAndDelete(req.params.id).lean();
+    if (!deletedEmp) return res.status(404).send('Employee not found');
+    res.render('employees/deleteEmployee', { employee: deletedEmp });
+  } catch (err) {
+    res.status(500).send('Error deleting employee: ' + err.message);
+  }
+});
+
+
+
+
+// ======== Game Exmaples from DEMO ========= //
+
+//Mongoose game Schema and Model
 const gameSchema = new mongoose.Schema({
   gamename:String,
   developer:String
 })
 
 const Game = mongoose.model("Game", gameSchema, "favoritegames");
-
-
 //Handlebars examples
 app.get("/hbsindex", (req,res)=>{
   res.render("home", {
@@ -47,6 +145,7 @@ app.get("/hbsindex", (req,res)=>{
       message:"This is our page using the template engine"
   })
 });
+
 
 //Crud app examples Connection to DB route examples below
 app.get("/games", async (req,res)=>{
@@ -73,6 +172,7 @@ app.get("/games/:id", async (req, res)=>{
 
 // route to add game (POST)
 app.post("/addgame", async (req, res)=>{
+  console.log(req.body.gamename);
   try{
       const newGame = new Game(req.body);
       const savedGame = await newGame.save();
@@ -82,6 +182,14 @@ app.post("/addgame", async (req, res)=>{
       res.status(400).json({error: "Failed to create entry"});
   }
 })
+
+//For HBs View form
+app.get("/addgame", (req,res)=>{
+  res.render("addgame", {
+      title:"Add a game to the Favorite Game Database",
+      message:"Please add a game."
+  })
+});
 
 // route for update (PUT)
 app.put("/updategame/:id", async (req, res)=>{
@@ -117,7 +225,7 @@ app.delete("/deletegame/gamename/", async (req,res)=>{
 })
 
 
-
+// ======== Rest of File ========= //
 const readFile = (path) => {
   return new Promise((resolve, reject) => {
     fs.readFile(path, 'utf8', (err, data) => {
@@ -130,9 +238,9 @@ const readFile = (path) => {
   });
 };
 
-app.get('/index', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+//app.get('/index', (req, res) => {
+  //res.sendFile(path.join(__dirname, 'public', 'index.html'));
+//});
 
 app.get('/todo', async (req, res) => {
   let data = await readFile('data/todo.json');
@@ -147,12 +255,8 @@ app.get("/nodemon",(req,res)=>{
   res.sendStatus(500);
 })
 
-// updated
 app.use((req, res) => {
-  res.writeHead(301, {
-    Location: `http://${req.headers.host}/index`,
-  });
-  res.end();
+  res.redirect('/');
 });
 
 //PORT log
