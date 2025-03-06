@@ -1,12 +1,19 @@
-const moment = require("moment"); // Import moment.js for date formatting
+require("dotenv").config();
+const moment = require("moment"); // For date formatting
 const express = require('express');
+const session = require("express-session");
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const exphbs = require("express-handlebars");
 const path = require('path');
+const passport = require("passport");
+const flash = require("connect-flash");
 const fs = require('fs');
 const PORT = 3000;
 const app = express();
+
+//Passport Configuration
+require("./config/passport")(passport);
 
 app.engine('hbs', exphbs.engine({
   extname: '.hbs',
@@ -31,6 +38,33 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 
+//Setup Express-Session Middleware
+app.use(session({
+  secret:"secret",
+  resave:false,
+  saveUninitialized:true
+}))
+
+//Setup Passport Middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+//Setup Flash messaging
+app.use(flash());
+
+//Global Variables for Flash Messages
+app.use((req, res, next)=>{
+  res.locals.success_msg = req.flash("success_msg");
+  res.locals.error_msg = req.flash("error_msg");
+  res.locals.error = req.flash("error");
+  res.locals.user = req.user || null;
+  next();
+});
+
+app.use("/", require("./routes/auth").router);
+app.use("/", require("./routes/crud"));
+
+
 //MongoDB Database connection
 const mongoURI = "mongodb://localhost:27017/Empl"
 mongoose.connect(mongoURI);
@@ -54,8 +88,13 @@ const employeeSchema = new mongoose.Schema({
 const Employee = mongoose.model('Employee', employeeSchema, "employee");
 
 // ========== Employee Routes ========== //
-// 1. Home / Create Employee Form
+// 1. Home 
 app.get('/', (req, res) => {
+  res.render('dashboard'); 
+});
+
+// Create Employee Form
+app.get('/employees/create', (req, res) => {
   res.render('employees/createEmployee'); 
 });
 
@@ -125,8 +164,6 @@ app.get('/delete/:id', async (req, res) => {
     res.status(500).send('Error deleting employee: ' + err.message);
   }
 });
-
-
 
 
 // ======== Game Exmaples from DEMO ========= //
@@ -254,10 +291,6 @@ app.get('/read-todo', (req, res) => {
 app.get("/nodemon",(req,res)=>{
   res.sendStatus(500);
 })
-
-app.use((req, res) => {
-  res.redirect('/');
-});
 
 //PORT log
 app.listen(PORT, () => {
