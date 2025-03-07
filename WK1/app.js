@@ -13,8 +13,8 @@ const PORT = 3000;
 const app = express();
 
 const router = express.Router();
-const Employee = require('../models/employee');
-const { isAuthenticated } = require('../routes/auth'); // Ensure authentication
+const Employee = require("./models/employee");  
+const { isAuthenticated } = require('./routes/auth'); // Ensure authentication
 app.use("/employees", require("./routes/employees"));
 
 app.use("/", require("./routes/auth").router);
