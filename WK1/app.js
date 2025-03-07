@@ -12,6 +12,14 @@ const fs = require('fs');
 const PORT = 3000;
 const app = express();
 
+const router = express.Router();
+const Employee = require('../models/employee');
+const { isAuthenticated } = require('../routes/auth'); // Ensure authentication
+app.use("/employees", require("./routes/employees"));
+
+app.use("/", require("./routes/auth").router);
+app.use("/", require("./routes/crud"));
+
 //Passport Configuration
 require("./config/passport")(passport);
 
@@ -61,10 +69,6 @@ app.use((req, res, next)=>{
   next();
 });
 
-app.use("/", require("./routes/auth").router);
-app.use("/", require("./routes/crud"));
-
-
 //MongoDB Database connection
 const mongoURI = "mongodb://localhost:27017/Empl"
 mongoose.connect(mongoURI);
@@ -75,17 +79,6 @@ db.on("error", console.error.bind(console, "MongoDB Connection error"));
 db.once("open", ()=>{
   console.log('connected to MongoDB Database')
 });
-
-// Define the schema
-const employeeSchema = new mongoose.Schema({
-  firstName: String,
-  lastName: String,
-  department: String,
-  startDate: Date,
-  jobTitle: String,
-  salary: Number,
-});
-const Employee = mongoose.model('Employee', employeeSchema, "employee");
 
 // ========== Employee Routes ========== //
 // 1. Home 
@@ -165,7 +158,7 @@ app.get('/delete/:id', async (req, res) => {
   }
 });
 
-
+/*
 // ======== Game Exmaples from DEMO ========= //
 
 //Mongoose game Schema and Model
@@ -287,7 +280,7 @@ app.get('/todo', async (req, res) => {
 app.get('/read-todo', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'read-todo.html'));
 });
-
+*/
 app.get("/nodemon",(req,res)=>{
   res.sendStatus(500);
 })
