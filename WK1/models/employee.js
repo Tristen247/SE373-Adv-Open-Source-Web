@@ -8,7 +8,7 @@ const EmployeeSchema = new mongoose.Schema({
     dateAdded: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Employee', EmployeeSchema);
+module.exports = mongoose.model('Employee', EmployeeSchema, "employee");
 
 /*
 
