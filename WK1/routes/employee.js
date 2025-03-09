@@ -3,8 +3,10 @@ const router = express.Router();
 const Employee = require('../models/employee');
 const { isAuthenticated } = require('../routes/auth'); // Ensure authentication
 
+
+
 // Get all employees
-router.get('/', isAuthenticated, async (req, res) => {
+router.get('/employeeList', isAuthenticated, async (req, res) => {
     try {
         const employees = await Employee.find().lean();
         res.render('employees/viewEmployee', { employees });
@@ -18,11 +20,11 @@ router.get('/create', isAuthenticated, (req, res) => {
     res.render('employees/createEmployee');
 });
 
-// Create a new employee
+// Create a new employee (POST)
 router.post('/create', isAuthenticated, async (req, res) => {
     try {
         await Employee.create(req.body);
-        res.redirect('/employees');
+        res.redirect('/employeeList');
     } catch (err) {
         res.status(500).send('Error creating employee: ' + err.message);
     }
@@ -33,17 +35,17 @@ router.get('/edit/:id', isAuthenticated, async (req, res) => {
     try {
         const employee = await Employee.findById(req.params.id).lean();
         if (!employee) return res.status(404).send('Employee not found');
-        res.render('employees/editEmployee', { employee });
+        res.render('employees/editEmployee', { employee }); // check the render function
     } catch (err) {
         res.status(500).send('Error loading employee: ' + err.message);
     }
 });
 
-// Update an employee
+// Update an employee 
 router.post('/edit/:id', isAuthenticated, async (req, res) => {
     try {
         await Employee.findByIdAndUpdate(req.params.id, req.body);
-        res.redirect('/employees');
+        res.redirect('/employeeList');
     } catch (err) {
         res.status(500).send('Error updating employee: ' + err.message);
     }

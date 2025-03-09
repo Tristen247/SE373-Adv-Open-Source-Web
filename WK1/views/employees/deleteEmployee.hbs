@@ -10,11 +10,11 @@
   <h2>{{employee.firstName}} {{employee.lastName}} has been removed.</h2>
 
   <p>Department: {{employee.department}}</p>
-  <p>Start Date: {{employee.startDate}}</p>
+  <p>Start Date: {{formatAsDate employee.startDate 'YYYY-MM-DD'}}</p>
   <p>Job Title: {{employee.jobTitle}}</p>
   <p>Salary: {{employee.salary}}</p>
 
   <br>
-  <a href="/employees">Back to All Employees</a>
+  <a href="/employeeList">Back to All Employees</a>
 </body>
 </html>

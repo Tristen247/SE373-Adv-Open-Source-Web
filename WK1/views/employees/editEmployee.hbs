@@ -8,7 +8,7 @@
 <body>
   <h1>Edit Employee: {{employee.firstName}} {{employee.lastName}}</h1>
 
-  <form action="/update/{{employee._id}}" method="POST">
+  <form action="/edit/{{employee._id}}" method="POST">
     <label for="firstName">First Name:</label>
     <input type="text" name="firstName" value="{{employee.firstName}}" required><br><br>
 
@@ -39,6 +39,6 @@
   </form>
 
   <br>
-  <a href="/employees">Back to All Employees</a>
+  <a href="/employeeList">Back to All Employees</a>
 </body>
 </html>

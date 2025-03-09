@@ -1,14 +1,17 @@
-const mongoose = require('mongoose');
+const { db1 } = require("../db"); // Import db1
+const mongoose = require("mongoose");
 
 const EmployeeSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    role: { type: String, required: true },
-    department: { type: String, required: true },
-    dateAdded: { type: Date, default: Date.now }
+  firstName: String,
+  lastName: String,
+  department: String,
+  startDate: Date,
+  jobTitle: String,
+  salary: Number,
 });
 
-module.exports = mongoose.model('Employee', EmployeeSchema, "employee");
+module.exports = db1.model("Employee", EmployeeSchema, "employee");
+
 
 /*
 

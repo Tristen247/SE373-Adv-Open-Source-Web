@@ -10,53 +10,53 @@ const passport = require("passport");
 const flash = require("connect-flash");
 const fs = require('fs');
 const PORT = 3000;
-
 const app = express();
 const router = express.Router();
 
-const Employee = require("./models/employee");  
-const { isAuthenticated } = require('./routes/auth'); // Ensure authentication
+/* --------------------------
+   View Engine Setup
+--------------------------- */
+app.engine(
+  "hbs",
+  exphbs.engine({
+    extname: ".hbs",
+    defaultLayout: false,
+    helpers: {
+      eq: (a, b) => a === b,
+      formatAsDate: (date, format) => {
+        if (!date) return "";
+        if (!(date instanceof Date) && typeof date !== "string")
+          return "";
+        if (typeof format !== "string") format = "MM/DD/YYYY";
+        return moment(date).local().format(format);
+      },
+    },
+  })
+);
+app.set("view engine", "hbs");
+app.set("views", path.join(__dirname, "views"));
 
-// View Engine Setup
-app.engine('hbs', exphbs.engine({
-  extname: '.hbs',
-  defaultLayout: false,
-  helpers: {
-    eq: (a, b) => a === b,
-    formatAsDate: (date, format) => {
-      if (!date) return ''; // If no date, return empty string
-      if (!(date instanceof Date) && typeof date !== "string") return ''; // Ensure valid date
-      if (typeof format !== "string") format = "MM/DD/YYYY"; // Ensure is string format
-      return moment(date).local().format(format);
-    }
-  }
-}));
-app.set('view engine', 'hbs');
-app.set('views', path.join(__dirname, 'views'));
-
-// Body-Parser / URL-Encoded Setup
+/* --------------------------
+   Middleware Setup
+--------------------------- */
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: "secret",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false },
+  })
+);
 
-// Express-Session Middleware (must come before passport session)
-app.use(session({
-  secret: "secret",
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false }
-}));
-
-// Passport Configuration
+/* --------------------------
+   Passport and Flash Setup
+--------------------------- */
 require("./config/passport")(passport);
-
-// Passport Middleware
 app.use(passport.initialize());
 app.use(passport.session());
-
-// Flash Messaging
 app.use(flash());
-
-// Global Variables for Flash Messages
 app.use((req, res, next) => {
   res.locals.success_msg = req.flash("success_msg");
   res.locals.error_msg = req.flash("error_msg");
@@ -65,28 +65,49 @@ app.use((req, res, next) => {
   next();
 });
 
-// Mount Routes AFTER session + flash are configured
-app.use("/employees", require("./routes/employee"));
+/* --------------------------
+   Routes
+--------------------------- */
 app.use("/", require("./routes/auth").router);
-app.use("/", require("./routes/crud"));
-
-// MongoDB Connection
-const mongoURI = "mongodb://localhost:27017/Empl";
-mongoose.connect(mongoURI);
-const db = mongoose.connection;
-
-// Check Connection
-db.on("error", console.error.bind(console, "MongoDB Connection error"));
-db.once("open", () => {
-  console.log('connected to MongoDB Database');
-});
+app.use("/", require("./routes/employee"));
+const registerRoute = require("./routes/register");
+app.use("/", registerRoute);
 
 // Example Route
 app.get("/nodemon", (req, res) => {
   res.sendStatus(500);
 });
 
-// Start the Server
+/* --------------------------
+   Start the Server
+--------------------------- */
 app.listen(PORT, () => {
-  console.log("Server running on port 3000.");
+  console.log(`Server running on port ${PORT}.`);
 });
+
+
+
+/*
+// MongoDB Connection Employee DB
+const mongoURI = "mongodb://localhost:27017/Empl";
+mongoose.connect(mongoURI);
+const db = mongoose.connection;
+
+// MongoDB Connection Employee DB
+const mongoURI2 = "mongodb://localhost:27017/User";
+mongoose.connect(mongoURI2);
+const db2 = mongoose.connection;
+
+// Check Connection
+db.on("error", console.error.bind(console, "MongoDB Connection error"));
+db.once("open", () => {
+  console.log('connected to MongoDB Database: Empl');
+});
+
+// Check Connection
+db2.on("error", console.error.bind(console, "MongoDB Connection error"));
+db2.once("open", () => {
+  console.log('connected to MongoDB Database: User');
+});
+
+*/
